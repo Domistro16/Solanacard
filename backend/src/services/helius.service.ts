@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ECOSYSTEMS, getWhaleTier } from '../config/ecosystems';
 
 const HELIUS_RPC_URL = 'https://mainnet.helius-rpc.com';
-const HELIUS_API_URL = 'https://api.helius.xyz/v0';
+const HELIUS_API_URL = 'https://api-mainnet.helius-rpc.com/v0';
 const LAMPORTS_PER_SOL = 1_000_000_000;
 
 export interface WalletAnalysis {
