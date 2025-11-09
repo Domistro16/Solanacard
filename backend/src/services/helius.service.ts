@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { ECOSYSTEMS, getWhaleTier } from '../config/ecosystems';
 
-const HELIUS_BASE_URL = 'https://api.helius.xyz/v0';
+const HELIUS_RPC_URL = 'https://mainnet.helius-rpc.com';
+const HELIUS_API_URL = 'https://api.helius.xyz/v0';
 const LAMPORTS_PER_SOL = 1_000_000_000;
 
 export interface WalletAnalysis {
@@ -32,9 +33,11 @@ export interface WalletAnalysis {
 
 export class HeliusService {
   private apiKey: string;
+  private rpcUrl: string;
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
+    this.rpcUrl = `${HELIUS_RPC_URL}/?api-key=${apiKey}`;
   }
 
   /**
@@ -67,16 +70,19 @@ export class HeliusService {
   }
 
   /**
-   * Get SOL balance for an address
+   * Get SOL balance for an address using Solana RPC
    */
   private async getBalance(address: string): Promise<number> {
     try {
-      const response = await axios.post(
-        `${HELIUS_BASE_URL}/addresses/${address}/balances?api-key=${this.apiKey}`
-      );
+      const response = await axios.post(this.rpcUrl, {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getBalance',
+        params: [address],
+      });
 
-      const nativeBalance = response.data.nativeBalance || 0;
-      return nativeBalance / LAMPORTS_PER_SOL;
+      const lamports = response.data.result?.value || 0;
+      return lamports / LAMPORTS_PER_SOL;
     } catch (error) {
       console.error('Error fetching balance:', error);
       return 0;
@@ -84,13 +90,13 @@ export class HeliusService {
   }
 
   /**
-   * Get transaction history (limited to last 30 days for ecosystem analysis)
+   * Get transaction history using Enhanced Transactions API
    */
   private async getTransactions(address: string): Promise<any[]> {
     try {
-      // Get parsed transaction history
+      // Get parsed transaction history from Enhanced Transactions API
       const response = await axios.get(
-        `${HELIUS_BASE_URL}/addresses/${address}/transactions?api-key=${this.apiKey}&limit=1000`
+        `${HELIUS_API_URL}/addresses/${address}/transactions?api-key=${this.apiKey}`
       );
 
       return response.data || [];
@@ -101,15 +107,27 @@ export class HeliusService {
   }
 
   /**
-   * Get token assets for an address
+   * Get token assets for an address using DAS API
    */
   private async getAssets(address: string): Promise<any[]> {
     try {
-      const response = await axios.get(
-        `${HELIUS_BASE_URL}/addresses/${address}/balances?api-key=${this.apiKey}`
-      );
+      // Use DAS API getAssetsByOwner to get all tokens and NFTs
+      const response = await axios.post(this.rpcUrl, {
+        jsonrpc: '2.0',
+        id: 'get-assets',
+        method: 'getAssetsByOwner',
+        params: {
+          ownerAddress: address,
+          page: 1,
+          limit: 1000,
+          displayOptions: {
+            showFungible: true,
+            showNativeBalance: false,
+          },
+        },
+      });
 
-      return response.data.tokens || [];
+      return response.data.result?.items || [];
     } catch (error) {
       console.error('Error fetching assets:', error);
       return [];
@@ -167,7 +185,7 @@ export class HeliusService {
   }
 
   /**
-   * Get top token holdings
+   * Get top token holdings from DAS API assets
    */
   private getTopHoldings(
     assets: any[],
@@ -187,17 +205,29 @@ export class HeliusService {
       },
     ];
 
-    // Add token holdings
+    // Add token holdings from DAS API format
     if (assets && assets.length > 0) {
       const tokenHoldings = assets
+        .filter((asset) => {
+          // Filter for fungible tokens only
+          return (
+            asset.interface === 'FungibleToken' ||
+            asset.interface === 'FungibleAsset'
+          );
+        })
+        .map((asset) => {
+          const content = asset.content;
+          const tokenInfo = asset.token_info;
+
+          return {
+            symbol: tokenInfo?.symbol || content?.metadata?.symbol || 'Unknown',
+            name: content?.metadata?.name || 'Unknown Token',
+            amount: tokenInfo?.balance || 0,
+            usdValue: tokenInfo?.price_info?.total_price || 0,
+          };
+        })
         .filter((token) => token.amount > 0)
-        .map((token) => ({
-          symbol: token.tokenAccount?.tokenSymbol || 'Unknown',
-          name: token.tokenAccount?.tokenName || 'Unknown Token',
-          amount: token.amount / Math.pow(10, token.decimals || 9),
-          usdValue: 0, // Could integrate price API here
-        }))
-        .sort((a, b) => (b.usdValue || 0) - (a.usdValue || 0))
+        .sort((a, b) => (b.usdValue || b.amount) - (a.usdValue || a.amount))
         .slice(0, 5);
 
       holdings.push(...tokenHoldings);
@@ -207,7 +237,7 @@ export class HeliusService {
   }
 
   /**
-   * Analyze ecosystem interactions from transactions
+   * Analyze ecosystem interactions from Enhanced Transactions API data
    */
   private analyzeEcosystems(transactions: any[]): Array<{
     name: string;
@@ -224,25 +254,45 @@ export class HeliusService {
     const ecosystemCounts: Record<string, number> = {};
 
     for (const tx of recentTransactions) {
-      // Check all account keys in the transaction
-      const accountKeys = tx.accountData || [];
+      // Check accountData from Enhanced Transactions API
+      const accountData = tx.accountData || [];
 
-      for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
-        for (const programId of ecosystem.programIds) {
-          if (accountKeys.some((key: any) => key.account === programId)) {
+      for (const account of accountData) {
+        for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
+          if (ecosystem.programIds.includes(account.account)) {
             ecosystemCounts[ecosystem.name] =
               (ecosystemCounts[ecosystem.name] || 0) + 1;
+            break; // Count once per transaction
           }
         }
       }
 
-      // Also check instructions
-      if (tx.instructions) {
-        for (const instruction of tx.instructions) {
-          for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
-            if (ecosystem.programIds.includes(instruction.programId)) {
+      // Check instructions
+      const instructions = tx.instructions || [];
+      for (const instruction of instructions) {
+        for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
+          if (ecosystem.programIds.includes(instruction.programId)) {
+            ecosystemCounts[ecosystem.name] =
+              (ecosystemCounts[ecosystem.name] || 0) + 1;
+            break; // Count once per transaction
+          }
+        }
+      }
+
+      // Check native transfers and token transfers
+      const nativeTransfers = tx.nativeTransfers || [];
+      const tokenTransfers = tx.tokenTransfers || [];
+
+      // Check if transaction involves known program IDs
+      if (tx.type) {
+        // Enhanced API provides transaction type which can help identify ecosystems
+        for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
+          const transactionData = JSON.stringify(tx);
+          for (const programId of ecosystem.programIds) {
+            if (transactionData.includes(programId)) {
               ecosystemCounts[ecosystem.name] =
                 (ecosystemCounts[ecosystem.name] || 0) + 1;
+              break;
             }
           }
         }
