@@ -90,29 +90,16 @@ export class HeliusService {
   }
 
   /**
-   * Get transaction history using getTransactionsForAddress RPC method
+   * Get transaction history using Enhanced Transactions API
    */
   private async getTransactions(address: string): Promise<any[]> {
     try {
-      // Use the getTransactionsForAddress RPC method for better control
-      const response = await axios.post(this.rpcUrl, {
-        jsonrpc: '2.0',
-        id: 'get-transactions',
-        method: 'getTransactionsForAddress',
-        params: [
-          address,
-          {
-            transactionDetails: 'full',
-            sortOrder: 'desc', // Most recent first
-            limit: 1000,
-            filters: {
-              status: 'succeeded', // Only successful transactions
-            },
-          },
-        ],
-      });
+      // Get parsed transaction history from Enhanced Transactions API
+      const response = await axios.get(
+        `${HELIUS_API_URL}/addresses/${address}/transactions?api-key=${this.apiKey}`
+      );
 
-      return response.data.result?.data || [];
+      return response.data || [];
     } catch (error) {
       console.error('Error fetching transactions:', error);
       return [];
@@ -158,11 +145,9 @@ export class HeliusService {
       return { firstTransactionDate: null, daysSinceFirst: null };
     }
 
-    // Transactions are ordered newest first (desc), so get the last one
+    // Transactions are usually ordered newest first, so get the last one
     const firstTx = transactions[transactions.length - 1];
-    // blockTime is in Unix timestamp (seconds)
-    const blockTime = firstTx.blockTime || firstTx.timestamp;
-    const firstDate = new Date(blockTime * 1000);
+    const firstDate = new Date(firstTx.timestamp * 1000);
     const now = new Date();
     const daysSinceFirst = Math.floor(
       (now.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -185,11 +170,9 @@ export class HeliusService {
       return { lastTransactionDate: null, daysSinceLast: null };
     }
 
-    // First transaction in the array is the most recent (desc order)
+    // First transaction in the array is the most recent
     const lastTx = transactions[0];
-    // blockTime is in Unix timestamp (seconds)
-    const blockTime = lastTx.blockTime || lastTx.timestamp;
-    const lastDate = new Date(blockTime * 1000);
+    const lastDate = new Date(lastTx.timestamp * 1000);
     const now = new Date();
     const daysSinceLast = Math.floor(
       (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -254,7 +237,7 @@ export class HeliusService {
   }
 
   /**
-   * Analyze ecosystem interactions from transaction data
+   * Analyze ecosystem interactions from Enhanced Transactions API data
    */
   private analyzeEcosystems(transactions: any[]): Array<{
     name: string;
@@ -263,54 +246,56 @@ export class HeliusService {
     const thirtyDaysAgo = Date.now() / 1000 - 30 * 24 * 60 * 60;
 
     // Filter transactions from last 30 days
-    const recentTransactions = transactions.filter((tx) => {
-      const blockTime = tx.blockTime || tx.timestamp;
-      return blockTime >= thirtyDaysAgo;
-    });
+    const recentTransactions = transactions.filter(
+      (tx) => tx.timestamp >= thirtyDaysAgo
+    );
 
     // Count interactions with each ecosystem
     const ecosystemCounts: Record<string, number> = {};
 
     for (const tx of recentTransactions) {
-      const txEcosystems = new Set<string>(); // Track ecosystems per transaction
+      // Check accountData from Enhanced Transactions API
+      const accountData = tx.accountData || [];
 
-      // Get account keys from transaction message
-      const accountKeys =
-        tx.transaction?.message?.accountKeys ||
-        tx.accountData ||
-        [];
-
-      // Check account keys for known program IDs
-      for (const accountKey of accountKeys) {
-        const address = typeof accountKey === 'string' ? accountKey : accountKey.pubkey || accountKey.account;
-
-        for (const ecosystem of Object.values(ECOSYSTEMS)) {
-          if (ecosystem.programIds.includes(address)) {
-            txEcosystems.add(ecosystem.name);
+      for (const account of accountData) {
+        for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
+          if (ecosystem.programIds.includes(account.account)) {
+            ecosystemCounts[ecosystem.name] =
+              (ecosystemCounts[ecosystem.name] || 0) + 1;
+            break; // Count once per transaction
           }
         }
       }
 
-      // Check instructions for program IDs
-      const instructions =
-        tx.transaction?.message?.instructions ||
-        tx.instructions ||
-        [];
-
+      // Check instructions
+      const instructions = tx.instructions || [];
       for (const instruction of instructions) {
-        const programId = instruction.programId || instruction.program;
-
-        for (const ecosystem of Object.values(ECOSYSTEMS)) {
-          if (ecosystem.programIds.includes(programId)) {
-            txEcosystems.add(ecosystem.name);
+        for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
+          if (ecosystem.programIds.includes(instruction.programId)) {
+            ecosystemCounts[ecosystem.name] =
+              (ecosystemCounts[ecosystem.name] || 0) + 1;
+            break; // Count once per transaction
           }
         }
       }
 
-      // Increment count for each unique ecosystem in this transaction
-      for (const ecosystemName of txEcosystems) {
-        ecosystemCounts[ecosystemName] =
-          (ecosystemCounts[ecosystemName] || 0) + 1;
+      // Check native transfers and token transfers
+      const nativeTransfers = tx.nativeTransfers || [];
+      const tokenTransfers = tx.tokenTransfers || [];
+
+      // Check if transaction involves known program IDs
+      if (tx.type) {
+        // Enhanced API provides transaction type which can help identify ecosystems
+        for (const [ecosystemKey, ecosystem] of Object.entries(ECOSYSTEMS)) {
+          const transactionData = JSON.stringify(tx);
+          for (const programId of ecosystem.programIds) {
+            if (transactionData.includes(programId)) {
+              ecosystemCounts[ecosystem.name] =
+                (ecosystemCounts[ecosystem.name] || 0) + 1;
+              break;
+            }
+          }
+        }
       }
     }
 
