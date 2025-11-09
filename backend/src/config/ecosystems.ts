@@ -1,6 +1,6 @@
 /**
- * Ecosystem presets with their associated contract addresses
- * These are well-known Solana protocols and their program IDs
+ * App-specific configurations with their program IDs
+ * These are well-known Solana applications and their on-chain program addresses
  */
 
 export interface Ecosystem {
@@ -10,76 +10,140 @@ export interface Ecosystem {
 }
 
 export const ECOSYSTEMS: Record<string, Ecosystem> = {
-  DEFI: {
-    name: "DeFi",
+  JUPITER: {
+    name: "Jupiter",
     programIds: [
-      "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4", // Jupiter Aggregator
-      "JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB", // Jupiter V4
-      "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc", // Orca Whirlpool
-      "9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP", // Orca V2
-      "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8", // Raydium AMM
-      "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK", // Raydium CLMM
-      "MERLuDFBMmsHnsBPZw2sDQZHvXFMwp8EdjudcU2HKky", // Marinade Finance
-      "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo", // Solend
-      "SWiMDJYFUGj6cPrQ6QYYYWZtvXQdRChSVAygDZDsCHC", // Switchboard
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", // Token Program (for swaps)
+      "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+      "JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB",
+      "JUP3c2Uh3WA4Ng34ocd2GKh6Er6bgE7nxkhMeL2HkQmp",
     ],
-    description: "Decentralized Finance",
+    description: "DEX Aggregator",
   },
-  NFT: {
-    name: "NFT",
+  RAYDIUM: {
+    name: "Raydium",
     programIds: [
-      "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K", // Magic Eden V2
-      "MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8", // Magic Eden
-      "CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz", // Solanart
-      "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s", // Metaplex Token Metadata
-      "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk", // Auction House
-      "cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ", // Candy Machine V2
-      "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY", // Bubblegum (Compressed NFTs)
+      "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
+      "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
+      "RVKd61ztZW9GUwhRbbLoYVRE5Xf1B2tVscKqwZqXgEr",
     ],
-    description: "NFT Marketplaces and Minting",
+    description: "AMM DEX",
   },
-  GAMING: {
-    name: "Gaming",
+  ORCA: {
+    name: "Orca",
     programIds: [
-      "BAP315i1xoAXqbJcTT1LrUS45N3tAQnNnPuNQkCcvbAr", // Star Atlas
-      "DRAWwhN14K1JBxjhJoeFwtW15MH1fF6fVBJJMFJL9Vrx", // DRAAW
-      "GENEUpG4Ncpjy3kTpVYCy3EhLGYqWQeFWLTe6H8QYZBv", // Genopets
-      "AURYydfxJib1ZkTir1Jn1J9ECYUtjb6rKQVmtYaixWPP", // Aurory
-      "minrmrZmwNZfpEqLhvuHjyFLwM7LPbuRXJjBFkHbQFk", // Miner Rush
+      "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+      "9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP",
     ],
-    description: "Gaming and Metaverse",
+    description: "AMM DEX",
   },
-  LENDING: {
-    name: "Lending",
+  PUMP_FUN: {
+    name: "Pump.fun",
     programIds: [
-      "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo", // Solend
-      "LENDhNTBsv7vqMBnxd6EMUxzQeYmLmT4fCQ2XKTYH8e", // Port Finance
-      "JD3bq9hGdy38PuWQ4h2YJpELmHVGPPfFSuFkpzAd9zfu", // Jet Protocol
-      "Kao1i4r9DzqJZjsRn5K3WaqaSLqN56q1RRZfKvPy1Ux", // Apricot Finance
+      "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+      "PumpFunKEqN4kJLEzD9JFbVqSyJuPqxPwJsX5FQjf1",
     ],
-    description: "Lending Protocols",
+    description: "Meme Coin Launchpad",
   },
-  SOCIAL: {
-    name: "Social",
+  MAGIC_EDEN: {
+    name: "Magic Eden",
     programIds: [
-      "4bK6fgAJmBMGGc9u7eZxBE4rQ92rLDKvTZEJ3gKQXEJh", // Dialect
-      "SNSaTQw4KZNYR1P1aq8TjqHBGZFZMJZw5pf5Jvp3pump", // SNS (Solana Name Service)
-      "namesLPneVptA9Z5rqUDD9tMTWEJwofgaYwp8cawRkX", // Bonfida Name Service
-      "TipszqJXxKzr5qW3hQQzLsjtzBdCZfUjnxJyQRvPPsc", // Tiplink
+      "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K",
+      "MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8",
+      "1BWutmTvYPwDtmw9abTkS4Ssr8no61spGAvW1X6NDix",
     ],
-    description: "Social and Identity",
+    description: "NFT Marketplace",
   },
-  STAKING: {
-    name: "Staking",
+  TENSOR: {
+    name: "Tensor",
     programIds: [
-      "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD", // Marinade
-      "LidoLiquidStaking11111111111111111111111111", // Lido
-      "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy", // Socean
-      "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn", // Jito
-      "Stake11111111111111111111111111111111111111", // Native Staking
+      "TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN",
+      "TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp",
+    ],
+    description: "NFT Marketplace",
+  },
+  METEORA: {
+    name: "Meteora",
+    programIds: [
+      "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+      "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+    ],
+    description: "Liquidity Protocol",
+  },
+  MARINADE: {
+    name: "Marinade",
+    programIds: [
+      "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD",
     ],
     description: "Liquid Staking",
+  },
+  JITO: {
+    name: "Jito",
+    programIds: [
+      "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
+      "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
+    ],
+    description: "MEV & Liquid Staking",
+  },
+  KAMINO: {
+    name: "Kamino",
+    programIds: [
+      "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+      "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+    ],
+    description: "Lending & Liquidity",
+  },
+  MARGINFI: {
+    name: "MarginFi",
+    programIds: [
+      "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+    ],
+    description: "Lending Protocol",
+  },
+  DRIFT: {
+    name: "Drift",
+    programIds: [
+      "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH",
+    ],
+    description: "Perpetuals DEX",
+  },
+  PHOENIX: {
+    name: "Phoenix",
+    programIds: [
+      "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY",
+    ],
+    description: "Orderbook DEX",
+  },
+  STAR_ATLAS: {
+    name: "Star Atlas",
+    programIds: [
+      "BAP315i1xoAXqbJcTT1LrUS45N3tAQnNnPuNQkCcvbAr",
+      "FLEET1qqzpexyaDpqb2DGsSzE2sDCizewCg9WjrA6DBW",
+    ],
+    description: "Gaming",
+  },
+  GENOPETS: {
+    name: "Genopets",
+    programIds: [
+      "GENEUpG4Ncpjy3kTpVYCy3EhLGYqWQeFWLTe6H8QYZBv",
+    ],
+    description: "Gaming",
+  },
+  BONFIDA: {
+    name: "Bonfida",
+    programIds: [
+      "namesLPneVptA9Z5rqUDD9tMTWEJwofgaYwp8cawRkX",
+    ],
+    description: "Name Service",
+  },
+  METAPLEX: {
+    name: "Metaplex",
+    programIds: [
+      "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+      "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk",
+      "cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ",
+      "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY",
+    ],
+    description: "NFT Infrastructure",
   },
 };
 
