@@ -118,7 +118,6 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
     };
     persImg.onload = () => {
       // Draw pers image in the rounded square
-      const persX = 200; // Left aligned with other elements
       const persY = 150; // Positioned in the rounded square
       ctx.drawImage(persImg, 180, persY, 310, 35);
 
@@ -131,7 +130,7 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
 function drawCardContent(
   ctx: CanvasRenderingContext2D,
   width: number,
-  height: number,
+  _height: number,
   data: WalletAnalysis
 ) {
   // Address - positioned below tagline
@@ -210,7 +209,7 @@ function drawStatItem(
   x: number,
   y: number,
   value: string,
-  accentColor: string
+  _accentColor: string
 ) {
   // Label in accent color
   ctx.font = "11px Grotesk";
