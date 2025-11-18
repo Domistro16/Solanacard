@@ -10,6 +10,14 @@ import pers6 from "../assets/pers6.png";
 import pers7 from "../assets/pers7.png";
 import pers8 from "../assets/pers8.png";
 import pers9 from "../assets/pers9.png";
+import Verd1 from "../assets/Verd1.png";
+import Verd2 from "../assets/Verd2.png";
+import Verd3 from "../assets/Verd3.png";
+import Verd4 from "../assets/Verd4.png";
+import Verd5 from "../assets/Verd5.png";
+import Verd6 from "../assets/Verd6.png";
+import Verd7 from "../assets/Verd7.png";
+import Verd8 from "../assets/Verd8.png";
 
 const persImages = [
   Pers1,
@@ -22,6 +30,8 @@ const persImages = [
   pers8,
   pers9,
 ];
+
+const verdImages = [Verd1, Verd2, Verd3, Verd4, Verd5, Verd6, Verd7, Verd8];
 
 interface WalletCardProps {
   data: WalletAnalysis;
@@ -97,7 +107,7 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
   // Select a random pers image
   const randomPersImage =
     persImages[Math.floor(Math.random() * persImages.length)];
-
+  const randomVerd = verdImages[Math.floor(Math.random() * verdImages.length)];
   // Load and draw background image
   const bgImage = new Image();
   bgImage.src = BlankImage;
@@ -106,13 +116,15 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
     ctx.drawImage(bgImage, 0, 0, width, height);
 
     // Load and draw the pers image
+    const verdImg = new Image();
+    verdImg.src = randomVerd;
     const persImg = new Image();
     persImg.src = randomPersImage;
     const statusImg = new Image();
     statusImg.src = `/${data.whaleStatus.tier.toLowerCase()}.png`;
-
-    console.log(statusImg.src);
-
+    verdImg.onload = () => {
+      ctx.drawImage(verdImg, 340, 343, 140, 100);
+    };
     statusImg.onload = () => {
       ctx.drawImage(statusImg, 165, 220, 150, 100);
     };
