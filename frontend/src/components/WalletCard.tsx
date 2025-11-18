@@ -41,9 +41,6 @@ export function WalletCard({ data }: WalletCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (canvasRef.current) {
-      drawCard(canvasRef.current, data);
-    }
     async function loadFonts() {
       const font = new FontFace(
         "Grotesk",
@@ -51,25 +48,22 @@ export function WalletCard({ data }: WalletCardProps) {
         { weight: "700", style: "normal" }
       );
 
-      // load them before drawing anything
       await Promise.all([font.load()]);
       document.fonts.add(font);
-
-      // ensure the browser has them ready (request a specific weight)
       await document.fonts.load('400 16px "Grotesk"');
       await document.fonts.ready;
     }
-    loadFonts();
-  }, [data]);
 
-  const downloadImage = () => {
-    if (canvasRef.current) {
-      const link = document.createElement("a");
-      link.download = `solpack-card-${data.address.slice(0, 8)}.png`;
-      link.href = canvasRef.current.toDataURL();
-      link.click();
+    async function init() {
+      await loadFonts();
+      if (canvasRef.current) {
+        await drawCard(canvasRef.current, data); // ✅ Make it async and await
+      }
     }
-  };
+
+    init();
+  }, [data]); // ✅ Only re-run when data changes
+
 
   return (
     <div>
@@ -78,65 +72,76 @@ export function WalletCard({ data }: WalletCardProps) {
           ref={canvasRef}
           width={650}
           height={650}
-          style={{ width: "650px", height: "650px" }} // Display size
+          style={{ width: "650px", height: "650px" }}
         />
       </div>
-      <button className="btn download-btn" onClick={downloadImage}>
-        Download Card
-      </button>
     </div>
   );
 }
 
-function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
+// ✅ Helper to load a single image
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = (err) => {
+      console.error(`Failed to load image: ${src}`, err);
+      reject(err);
+    };
+    img.src = src;
+  });
+}
+
+// ✅ Make drawCard async
+async function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const scale = 3; // Try 2 or 3 for best results
+
+  const scale = 3;
   const width = 650;
   const height = 650;
 
   canvas.width = width * scale;
   canvas.height = height * scale;
-
-  // ✅ Scale the context to match
   ctx.scale(scale, scale);
-
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  // Select a random pers image
+  // ✅ Clear canvas first to prevent duplicates
+  ctx.clearRect(0, 0, width, height);
+
+  // Select random images
   const randomPersImage =
     persImages[Math.floor(Math.random() * persImages.length)];
   const randomVerd = verdImages[Math.floor(Math.random() * verdImages.length)];
-  // Load and draw background image
-  const bgImage = new Image();
-  bgImage.src = BlankImage;
-  bgImage.onload = () => {
-    // Draw the background image
+
+  try {
+    // ✅ Load ALL images first, in parallel
+    const [bgImage, persImg, verdImg, statusImg] = await Promise.all([
+      loadImage(BlankImage),
+      loadImage(randomPersImage),
+      loadImage(randomVerd),
+      loadImage(`/${data.whaleStatus.tier.toLowerCase()}.png`),
+    ]);
+
+    // ✅ Now draw everything in the correct order, ONCE
+    // 1. Background first
     ctx.drawImage(bgImage, 0, 0, width, height);
 
-    // Load and draw the pers image
-    const verdImg = new Image();
-    verdImg.src = randomVerd;
-    const persImg = new Image();
-    persImg.src = randomPersImage;
-    const statusImg = new Image();
-    statusImg.src = `/${data.whaleStatus.tier.toLowerCase()}.png`;
-    verdImg.onload = () => {
-      ctx.drawImage(verdImg, 340, 343, 140, 100);
-    };
-    statusImg.onload = () => {
-      ctx.drawImage(statusImg, 165, 220, 150, 100);
-    };
-    persImg.onload = () => {
-      // Draw pers image in the rounded square
-      const persY = 150; // Positioned in the rounded square
-      ctx.drawImage(persImg, 180, persY, 310, 35);
+    // 2. Draw pers image
+    ctx.drawImage(persImg, 180, 150, 310, 35);
 
-      // // Continue with the rest of the drawing
-      drawCardContent(ctx, width, height, data);
-    };
-  };
+    // 3. Draw status image
+    ctx.drawImage(statusImg, 165, 220, 150, 100);
+
+    // 4. Draw verd image
+    ctx.drawImage(verdImg, 340, 343, 140, 100);
+
+    // 5. Draw text content last (on top of everything)
+    drawCardContent(ctx, width, height, data);
+  } catch (error) {
+    console.error("Error loading images:", error);
+  }
 }
 
 function drawCardContent(
@@ -145,6 +150,7 @@ function drawCardContent(
   _height: number,
   data: WalletAnalysis
 ) {
+  width = width;
   // Address - positioned below tagline
   ctx.fillStyle = "#fff";
   ctx.font = "14px Grotesk";
@@ -152,9 +158,7 @@ function drawCardContent(
   const shortAddress = `${data.address.slice(0, 4)}...${data.address.slice(
     -3
   )}`;
-  ctx.fillText(shortAddress, width / 3, 195, 90);
-
-  // Stats Section - Right side positioning to match template
+  ctx.fillText(shortAddress, 227, 195, 90);
 
   // Era Joined
   const getEraLabel = (firstTransactionDate: string | null): string => {
@@ -197,7 +201,13 @@ function drawCardContent(
     ctx,
     225,
     420,
-    data.topHoldings.length > 0 ? `$${data.topHoldings[0].symbol} ` : "None",
+    data.topHoldings.length > 0
+      ? `$${
+          data.topHoldings[0].amount > data.topHoldings[1].amount
+            ? data.topHoldings[0].symbol
+            : data.topHoldings[1].symbol
+        }  `
+      : "None",
     "#6B8AFF"
   );
 
@@ -223,7 +233,6 @@ function drawStatItem(
   value: string,
   _accentColor: string
 ) {
-  // Label in accent color
   ctx.font = "11px Grotesk";
   ctx.textAlign = "left";
   ctx.fillStyle = "#ffffff";

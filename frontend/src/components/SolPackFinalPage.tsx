@@ -70,7 +70,7 @@ export default function SolPackFinalPage({ wallet, data, onRestart }: SolPackFin
           </button>
 
           <button
-            className="rounded-lg bg-solYellow text-black font-semibold py-3 px-6 text-sm shadow-md hover:bg-[#e0a000] transition"
+            className="rounded-lg bg-[#e0a000] text-black font-semibold py-3 px-6 text-sm shadow-md hover:bg-[#e0a000] transition"
             onClick={handleShare}
           >
             Share On X With Frens

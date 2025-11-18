@@ -14,15 +14,15 @@ export default function SolPackEntryPage({ onContinue }: SolPackEntryPageProps) 
       <div className="absolute -top-20 -left-20 h-72 w-72 bg-cyan-500/20 blur-2xl rounded-full opacity-40" />
       <div className="absolute bottom-0 right-0 h-80 w-80 bg-fuchsia-500/20 blur-2xl rounded-full opacity-40" />
 
-      <div className="relative z-10 flex flex-col items-center space-y-6 max-w-md text-center">
-        <h1 className="text-4xl font-semibold leading-tight">
+      <div className="relative z-10 flex flex-col items-center space-y-6  text-center">
+        <h1 className="text-6xl font-semibold leading-tight">
           Your Wallet Has A Personality,
           <br />
           <span className="opacity-90 italic">Let&apos;s Reveal It</span>
         </h1>
 
         <p className="text-slate-300 text-sm md:text-base">
-          Paste your Solana wallet address to generate your SolPack.
+          Enter your wallet address below.
         </p>
 
         {/* Default SolPack box */}
@@ -31,7 +31,7 @@ export default function SolPackEntryPage({ onContinue }: SolPackEntryPageProps) 
         </div>
 
         {/* Input + Button */}
-        <div className="w-full flex flex-col sm:flex-row gap-3 mt-4">
+        <div className="w-full flex flex-col sm:flex-row gap-3 mt-4 max-w-md">
           <input
             value={wallet}
             onChange={(e) => setWallet(e.target.value)}
@@ -41,7 +41,7 @@ export default function SolPackEntryPage({ onContinue }: SolPackEntryPageProps) 
 
           <button
             onClick={() => onContinue(wallet)}
-            className="rounded-xl bg-white text-black px-6 py-3 text-sm font-semibold hover:bg-slate-200 transition"
+            className="rounded-xl bg-white text-black px-6 py-2 text-sm font-semibold hover:bg-slate-200 transition"
           >
             Check
           </button>

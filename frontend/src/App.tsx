@@ -3,7 +3,6 @@ import axios from "axios";
 import { WalletAnalysis } from "./types";
 import SolPackEntryPage from "./components/SolPackEntryPage";
 import SolPackFinalPage from "./components/SolPackFinalPage";
-import "./App.css";
 
 type Stage = "entry" | "loading" | "final";
 
