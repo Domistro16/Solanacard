@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { WalletAnalysis } from '../types';
+import BlankImage from '../assets/Blank.png';
 
 interface WalletCardProps {
   data: WalletAnalysis;
@@ -26,7 +27,7 @@ export function WalletCard({ data }: WalletCardProps) {
   return (
     <div>
       <div className="canvas-container">
-        <canvas ref={canvasRef} width={1200} height={630} />
+        <canvas ref={canvasRef} width={540} height={630} />
       </div>
       <button className="btn download-btn" onClick={downloadImage}>
         Download Card
@@ -42,36 +43,32 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
   const width = canvas.width;
   const height = canvas.height;
 
-  // Background gradient
-  const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, '#0a0a0f');
-  gradient.addColorStop(0.5, '#14141f');
-  gradient.addColorStop(1, '#1a1a2e');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
+  // Load and draw background image
+  const bgImage = new Image();
+  bgImage.src = BlankImage;
+  bgImage.onload = () => {
+    // Draw the background image
+    ctx.drawImage(bgImage, 0, 0, width, height);
 
-  // Add accent gradient overlay
-  const accentGradient = ctx.createLinearGradient(0, 0, width, height);
-  accentGradient.addColorStop(0, 'rgba(153, 69, 255, 0.1)');
-  accentGradient.addColorStop(1, 'rgba(20, 241, 149, 0.1)');
-  ctx.fillStyle = accentGradient;
-  ctx.fillRect(0, 0, width, height);
+    // Continue with the rest of the drawing
+    drawCardContent(ctx, width, height, data);
+  };
+}
 
-  // Border
-  ctx.strokeStyle = '#2a2a3e';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(10, 10, width - 20, height - 20);
+function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: number, data: WalletAnalysis) {
 
   // Title
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 48px Arial';
-  ctx.fillText('SOLANA WALLET CARD', 60, 80);
+  ctx.font = 'bold 24px Arial';
+  ctx.fillText('SolPack', width / 2, 120);
+  ctx.textAlign = 'center';
 
   // Address
   ctx.fillStyle = '#a0a0b0';
-  ctx.font = '24px monospace';
-  const shortAddress = `${data.address.slice(0, 8)}...${data.address.slice(-8)}`;
-  ctx.fillText(shortAddress, 60, 120);
+  ctx.font = '12px monospace';
+  const shortAddress = `${data.address.slice(0, 6)}...${data.address.slice(-6)}`;
+  ctx.fillText(shortAddress, width / 2, 145);
+  ctx.textAlign = 'left';
 
   // Whale Status - Large and prominent
   const tierColors: Record<string, string> = {
@@ -87,66 +84,69 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
   // Whale tier circle background
   ctx.fillStyle = 'rgba(153, 69, 255, 0.2)';
   ctx.beginPath();
-  ctx.arc(width - 200, 150, 100, 0, Math.PI * 2);
+  ctx.arc(width - 100, 250, 50, 0, Math.PI * 2);
   ctx.fill();
 
   // Whale tier text
   ctx.fillStyle = tierColor;
-  ctx.font = 'bold 36px Arial';
+  ctx.font = 'bold 16px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText(data.whaleStatus.tier, width - 200, 145);
+  ctx.fillText(data.whaleStatus.tier, width - 100, 248);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = '20px Arial';
-  ctx.fillText(`${data.whaleStatus.solBalance.toFixed(2)} SOL`, width - 200, 175);
+  ctx.font = '10px Arial';
+  ctx.fillText(`${data.whaleStatus.solBalance.toFixed(2)} SOL`, width - 100, 262);
   ctx.textAlign = 'left';
 
-  // Stats Section
-  let yPos = 200;
+  // Stats Section - Positioned to match the template layout
+  let yPos = 320;
 
-  // OG Status
-  drawStatBox(ctx, 60, yPos, 500, 120, 'OG STATUS',
+  // OG Status (ERA JOINED)
+  drawStatBox(ctx, 40, 180, 180, 60, 'ERA JOINED',
     data.ogStatus.daysSinceFirst !== null
-      ? `${data.ogStatus.daysSinceFirst} days on Solana`
-      : 'No history',
-    '#9945ff'
-  );
-
-  // Last Seen
-  drawStatBox(ctx, 640, yPos, 500, 120, 'LAST SEEN',
-    data.lastSeen.daysSinceLast !== null
-      ? data.lastSeen.daysSinceLast === 0
-        ? 'Active today'
-        : `${data.lastSeen.daysSinceLast} days ago`
-      : 'No activity',
+      ? `${data.ogStatus.daysSinceFirst} days`
+      : 'Unknown',
     '#14f195'
   );
 
-  yPos += 150;
-
-  // Top Holdings
-  drawStatBox(ctx, 60, yPos, 500, 200, 'TOP HOLDINGS',
-    data.topHoldings.slice(0, 4).map(h =>
-      `${h.symbol}: ${h.amount.toFixed(2)}`
-    ).join('\n'),
-    '#4da6ff'
+  // Last Seen
+  drawStatBox(ctx, 310, 235, 180, 60, 'LAST SEEN',
+    data.lastSeen.daysSinceLast !== null
+      ? data.lastSeen.daysSinceLast === 0
+        ? 'Today'
+        : `${data.lastSeen.daysSinceLast}d ago`
+      : 'Unknown',
+    '#14f195'
   );
 
-  // Top Ecosystems
-  drawStatBox(ctx, 640, yPos, 500, 200, 'TOP ECOSYSTEMS',
+  // Archetype (Whale Status)
+  drawStatBox(ctx, 40, 300, 180, 60, 'ARCHETYPE',
+    data.whaleStatus.tier,
+    '#14f195'
+  );
+
+  // Top Holdings (TOP BAGS)
+  drawStatBox(ctx, 40, 345, 180, 60, 'TOP BAGS',
+    data.topHoldings.length > 0
+      ? data.topHoldings[0].symbol
+      : 'None',
+    '#14f195'
+  );
+
+  // Top Ecosystems (ECOSYSTEM DEPTH)
+  drawStatBox(ctx, 40, 390, 180, 60, 'ECOSYSTEM DEPTH',
     data.topEcosystems.length > 0
-      ? data.topEcosystems.map(e =>
-          `${e.name}: ${e.interactionCount} txns`
-        ).join('\n')
-      : 'No ecosystem interactions',
-    '#ffd700'
+      ? `${data.topEcosystems.length} protocols`
+      : 'None',
+    '#14f195'
   );
 
   // Footer
-  ctx.fillStyle = '#a0a0b0';
-  ctx.font = '18px Arial';
+  ctx.fillStyle = '#14f195';
+  ctx.font = '10px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Generated by Solana Card', width / 2, height - 30);
+  ctx.fillText('Every wallet has a personality.', width / 2, height - 50);
+  ctx.fillText('Check yours at level3labs.fun', width / 2, height - 35);
   ctx.textAlign = 'left';
 }
 
@@ -160,26 +160,17 @@ function drawStatBox(
   value: string,
   accentColor: string
 ) {
-  // Box background
-  ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
-  ctx.fillRect(x, y, width, height);
-
-  // Border with accent color
-  ctx.strokeStyle = accentColor;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x, y, width, height);
-
   // Label
   ctx.fillStyle = accentColor;
-  ctx.font = 'bold 20px Arial';
-  ctx.fillText(label, x + 20, y + 35);
+  ctx.font = '10px Arial';
+  ctx.fillText(label, x, y);
 
   // Value
   ctx.fillStyle = '#ffffff';
-  ctx.font = '24px Arial';
+  ctx.font = 'bold 14px Arial';
 
   const lines = value.split('\n');
   lines.forEach((line, index) => {
-    ctx.fillText(line, x + 20, y + 75 + (index * 32));
+    ctx.fillText(line, x, y + 20 + (index * 16));
   });
 }
