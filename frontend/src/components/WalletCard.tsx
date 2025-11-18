@@ -70,36 +70,7 @@ function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: n
   ctx.fillText(shortAddress, width / 2, 145);
   ctx.textAlign = 'left';
 
-  // Whale Status - Large and prominent
-  const tierColors: Record<string, string> = {
-    Kraken: '#ff0080',
-    Whale: '#9945ff',
-    Shark: '#14f195',
-    Dolphin: '#4da6ff',
-    Fish: '#ffd700',
-  };
-
-  const tierColor = tierColors[data.whaleStatus.tier] || '#14f195';
-
-  // Whale tier circle background
-  ctx.fillStyle = 'rgba(153, 69, 255, 0.2)';
-  ctx.beginPath();
-  ctx.arc(width - 100, 250, 50, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Whale tier text
-  ctx.fillStyle = tierColor;
-  ctx.font = 'bold 16px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(data.whaleStatus.tier, width - 100, 248);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '10px Arial';
-  ctx.fillText(`${data.whaleStatus.solBalance.toFixed(2)} SOL`, width - 100, 262);
-  ctx.textAlign = 'left';
-
   // Stats Section - Positioned to match the template layout
-  let yPos = 320;
 
   // OG Status (ERA JOINED)
   drawStatBox(ctx, 40, 180, 180, 60, 'ERA JOINED',
