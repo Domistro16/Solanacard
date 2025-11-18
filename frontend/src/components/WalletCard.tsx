@@ -107,7 +107,7 @@ function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: n
   // Top Ecosystems (ECOSYSTEM DEPTH)
   drawStatBox(ctx, 40, 390, 180, 60, 'ECOSYSTEM DEPTH',
     data.topEcosystems.length > 0
-      ? `${data.topEcosystems.length} protocols`
+      ? data.topEcosystems[0].name
       : 'None',
     '#14f195'
   );
