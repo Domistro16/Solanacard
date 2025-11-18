@@ -1,17 +1,27 @@
-import { useEffect, useRef } from 'react';
-import { WalletAnalysis } from '../types';
-import BlankImage from '../assets/Blank.png';
-import Pers1 from '../assets/Pers1.png';
-import pers2 from '../assets/pers2.png';
-import pers3 from '../assets/pers3.png';
-import pers4 from '../assets/pers4.png';
-import pers5 from '../assets/pers5.png';
-import pers6 from '../assets/pers6.png';
-import pers7 from '../assets/pers7.png';
-import pers8 from '../assets/pers8.png';
-import pers9 from '../assets/pers9.png';
+import { useEffect, useRef } from "react";
+import { WalletAnalysis } from "../types";
+import BlankImage from "../assets/Blank.png"; // ✅ Use the truly blank template
+import Pers1 from "../assets/Pers1.png";
+import pers2 from "../assets/pers2.png";
+import pers3 from "../assets/pers3.png";
+import pers4 from "../assets/pers4.png";
+import pers5 from "../assets/pers5.png";
+import pers6 from "../assets/pers6.png";
+import pers7 from "../assets/pers7.png";
+import pers8 from "../assets/pers8.png";
+import pers9 from "../assets/pers9.png";
 
-const persImages = [Pers1, pers2, pers3, pers4, pers5, pers6, pers7, pers8, pers9];
+const persImages = [
+  Pers1,
+  pers2,
+  pers3,
+  pers4,
+  pers5,
+  pers6,
+  pers7,
+  pers8,
+  pers9,
+];
 
 interface WalletCardProps {
   data: WalletAnalysis;
@@ -24,12 +34,28 @@ export function WalletCard({ data }: WalletCardProps) {
     if (canvasRef.current) {
       drawCard(canvasRef.current, data);
     }
+    async function loadFonts() {
+      const font = new FontFace(
+        "Grotesk",
+        'url("https://fonts.gstatic.com/s/schibstedgrotesk/v7/Jqz55SSPQuCQF3t8uOwiUL-taUTtap9GayojdSFO.woff2") format("woff2")',
+        { weight: "700", style: "normal" }
+      );
+
+      // load them before drawing anything
+      await Promise.all([font.load()]);
+      document.fonts.add(font);
+
+      // ensure the browser has them ready (request a specific weight)
+      await document.fonts.load('400 16px "Grotesk"');
+      await document.fonts.ready;
+    }
+    loadFonts();
   }, [data]);
 
   const downloadImage = () => {
     if (canvasRef.current) {
-      const link = document.createElement('a');
-      link.download = `solana-card-${data.address.slice(0, 8)}.png`;
+      const link = document.createElement("a");
+      link.download = `solpack-card-${data.address.slice(0, 8)}.png`;
       link.href = canvasRef.current.toDataURL();
       link.click();
     }
@@ -38,7 +64,12 @@ export function WalletCard({ data }: WalletCardProps) {
   return (
     <div>
       <div className="canvas-container">
-        <canvas ref={canvasRef} width={540} height={630} />
+        <canvas
+          ref={canvasRef}
+          width={650}
+          height={650}
+          style={{ width: "650px", height: "650px" }} // Display size
+        />
       </div>
       <button className="btn download-btn" onClick={downloadImage}>
         Download Card
@@ -48,14 +79,24 @@ export function WalletCard({ data }: WalletCardProps) {
 }
 
 function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   if (!ctx) return;
+  const scale = 3; // Try 2 or 3 for best results
+  const width = 650;
+  const height = 650;
 
-  const width = canvas.width;
-  const height = canvas.height;
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+
+  // ✅ Scale the context to match
+  ctx.scale(scale, scale);
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   // Select a random pers image
-  const randomPersImage = persImages[Math.floor(Math.random() * persImages.length)];
+  const randomPersImage =
+    persImages[Math.floor(Math.random() * persImages.length)];
 
   // Load and draw background image
   const bgImage = new Image();
@@ -67,117 +108,114 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
     // Load and draw the pers image
     const persImg = new Image();
     persImg.src = randomPersImage;
-    persImg.onload = () => {
-      // Draw pers image centered directly below the title
-      const persSize = 80; // Size of the pers image
-      const persX = (width - persSize) / 2;
-      const persY = 135; // Position directly below the title
-      ctx.drawImage(persImg, persX, persY, persSize, persSize);
+    const statusImg = new Image();
+    statusImg.src = `/${data.whaleStatus.tier.toLowerCase()}.png`;
 
-      // Continue with the rest of the drawing
+    console.log(statusImg.src);
+
+    statusImg.onload = () => {
+      ctx.drawImage(statusImg, 165, 220, 150, 100);
+    };
+    persImg.onload = () => {
+      // Draw pers image in the rounded square
+      const persX = 200; // Left aligned with other elements
+      const persY = 150; // Positioned in the rounded square
+      ctx.drawImage(persImg, 180, persY, 310, 35);
+
+      // // Continue with the rest of the drawing
       drawCardContent(ctx, width, height, data);
     };
   };
 }
 
-function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: number, data: WalletAnalysis) {
+function drawCardContent(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  data: WalletAnalysis
+) {
+  // Address - positioned below tagline
+  ctx.fillStyle = "#fff";
+  ctx.font = "14px Grotesk";
+  ctx.textAlign = "center";
+  const shortAddress = `${data.address.slice(0, 4)}...${data.address.slice(
+    -3
+  )}`;
+  ctx.fillText(shortAddress, width / 3, 195, 90);
 
-  // Title
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 24px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('SolPack', width / 2, 120);
+  // Stats Section - Right side positioning to match template
 
-  // Address - positioned on left, above ERA JOINED box
-  ctx.fillStyle = '#a0a0b0';
-  ctx.font = '10px monospace';
-  ctx.textAlign = 'left';
-  const shortAddress = `${data.address.slice(0, 6)}...${data.address.slice(-6)}`;
-  ctx.fillText(shortAddress, 40, 265);
-
-  // Stats Section - Positioned to match the template layout
-
-  // OG Status (ERA JOINED)
+  // Era Joined
   const getEraLabel = (firstTransactionDate: string | null): string => {
-    if (!firstTransactionDate) return 'Unknown';
-
+    if (!firstTransactionDate) return "Unknown";
     const year = new Date(firstTransactionDate).getFullYear();
-
-    if (year <= 2021) return 'EARLY-OG';
-    if (year === 2022) return 'SURVIVOR';
-    if (year === 2023) return 'SEASONED';
-    if (year === 2024) return 'LEARNER';
-    if (year === 2025) return 'NEWBIE';
-    return 'FRESHER'; // 2026 or later
+    if (year <= 2021) return "EARLY-OG";
+    if (year === 2022) return "SURVIVOR";
+    if (year === 2023) return "SEASONED";
+    if (year === 2024) return "LEARNER";
+    if (year === 2025) return "NUB 2025";
+    return "FRESHER";
   };
 
-  drawStatBox(ctx, 40, 280, 180, 60, 'ERA JOINED',
+  drawStatItem(
+    ctx,
+    375,
+    220,
     getEraLabel(data.ogStatus.firstTransactionDate),
-    '#14f195'
+    "#6B8AFF"
   );
 
   // Last Seen
-  drawStatBox(ctx, 310, 280, 180, 60, 'LAST SEEN',
+  drawStatItem(
+    ctx,
+    375,
+    282,
     data.lastSeen.daysSinceLast !== null
       ? data.lastSeen.daysSinceLast === 0
-        ? 'Today'
+        ? "ACTIVE TODAY"
         : `${data.lastSeen.daysSinceLast}d ago`
-      : 'Unknown',
-    '#14f195'
+      : "Unknown",
+    "#6B8AFF"
   );
 
-  // Archetype (Whale Status)
-  drawStatBox(ctx, 40, 350, 180, 60, 'ARCHETYPE',
-    data.whaleStatus.tier,
-    '#14f195'
+  // Archetype
+  drawStatItem(ctx, 220, 360, data.whaleStatus.tier.toUpperCase(), "#fff");
+
+  // Top Bags
+  drawStatItem(
+    ctx,
+    225,
+    420,
+    data.topHoldings.length > 0 ? `$${data.topHoldings[0].symbol} ` : "None",
+    "#6B8AFF"
   );
 
-  // Top Holdings (TOP BAGS)
-  drawStatBox(ctx, 40, 420, 180, 60, 'TOP BAGS',
-    data.topHoldings.length > 0
-      ? `${data.topHoldings[0].name}\n${data.topHoldings[0].symbol}`
-      : 'None',
-    '#14f195'
-  );
-
-  // Top Ecosystems (ECOSYSTEM DEPTH)
-  drawStatBox(ctx, 40, 490, 180, 60, 'ECOSYSTEM DEPTH',
+  // Ecosystem Depth
+  drawStatItem(
+    ctx,
+    230,
+    480,
     data.topEcosystems.length > 0
-      ? data.topEcosystems[0].name
-      : 'None',
-    '#14f195'
+      ? data.topEcosystems
+          .slice(0, 1)
+          .map((e) => e.name.toUpperCase())
+          .join(" + ")
+      : "None",
+    "#6B8AFF"
   );
-
-  // Footer
-  ctx.fillStyle = '#14f195';
-  ctx.font = '10px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('Every wallet has a personality.', width / 2, height - 50);
-  ctx.fillText('Check yours at level3labs.fun', width / 2, height - 35);
-  ctx.textAlign = 'left';
 }
 
-function drawStatBox(
+function drawStatItem(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
-  width: number,
-  height: number,
-  label: string,
   value: string,
   accentColor: string
 ) {
-  // Label
-  ctx.fillStyle = accentColor;
-  ctx.font = '10px Arial';
-  ctx.fillText(label, x, y);
-
-  // Value
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 14px Arial';
-
-  const lines = value.split('\n');
-  lines.forEach((line, index) => {
-    ctx.fillText(line, x, y + 20 + (index * 16));
-  });
+  // Label in accent color
+  ctx.font = "11px Grotesk";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 13px Grotesk";
+  ctx.fillText(value, x, y + 25);
 }

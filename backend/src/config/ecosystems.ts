@@ -148,9 +148,9 @@ export const ECOSYSTEMS: Record<string, Ecosystem> = {
  * Get whale tier based on SOL balance
  */
 export function getWhaleTier(solBalance: number): string {
-  if (solBalance >= 100000) return "Kraken";
-  if (solBalance >= 10000) return "Whale";
-  if (solBalance >= 1000) return "Shark";
-  if (solBalance >= 100) return "Dolphin";
-  return "Fish";
+  if (solBalance >= 100) return "Cosmic Whale";
+  if (solBalance >= 21) return "Mega Whale";
+  if (solBalance >= 6) return "Whale";
+  if (solBalance >= 1) return "Dolphin";
+  return "Shrimp";
 }
