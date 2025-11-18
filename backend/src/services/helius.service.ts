@@ -25,6 +25,12 @@ export interface WalletAnalysis {
     amount: number;
     usdValue?: number;
   }>;
+  highestValueToken: {
+    symbol: string;
+    name: string;
+    amount: number;
+    usdValue: number;
+  } | null;
   topEcosystems: Array<{
     name: string;
     interactionCount: number;
@@ -57,6 +63,7 @@ export class HeliusService {
       solBalance: balance,
     };
     const topHoldings = this.getTopHoldings(assets, balance);
+    const highestValueToken = this.getHighestValueToken(topHoldings);
     const topEcosystems = this.analyzeEcosystems(transactions);
 
     return {
@@ -65,6 +72,7 @@ export class HeliusService {
       lastSeen,
       whaleStatus,
       topHoldings,
+      highestValueToken,
       topEcosystems,
     };
   }
@@ -252,6 +260,48 @@ export class HeliusService {
     }
 
     return holdings.slice(0, 6); // Return top 6 holdings
+  }
+
+  /**
+   * Get the token with the highest dollar value
+   */
+  private getHighestValueToken(
+    holdings: Array<{
+      symbol: string;
+      name: string;
+      amount: number;
+      usdValue?: number;
+    }>
+  ): {
+    symbol: string;
+    name: string;
+    amount: number;
+    usdValue: number;
+  } | null {
+    if (!holdings || holdings.length === 0) {
+      return null;
+    }
+
+    // Filter holdings that have a USD value
+    const holdingsWithValue = holdings.filter(
+      (holding) => holding.usdValue !== undefined && holding.usdValue > 0
+    );
+
+    if (holdingsWithValue.length === 0) {
+      return null;
+    }
+
+    // Find the token with the highest USD value
+    const highest = holdingsWithValue.reduce((max, current) => {
+      return (current.usdValue || 0) > (max.usdValue || 0) ? current : max;
+    });
+
+    return {
+      symbol: highest.symbol,
+      name: highest.name,
+      amount: highest.amount,
+      usdValue: highest.usdValue || 0,
+    };
   }
 
   /**
