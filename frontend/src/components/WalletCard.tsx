@@ -73,10 +73,21 @@ function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: n
   // Stats Section - Positioned to match the template layout
 
   // OG Status (ERA JOINED)
+  const getEraLabel = (firstTransactionDate: string | null): string => {
+    if (!firstTransactionDate) return 'Unknown';
+
+    const year = new Date(firstTransactionDate).getFullYear();
+
+    if (year <= 2021) return 'EARLY-OG';
+    if (year === 2022) return 'SURVIVOR';
+    if (year === 2023) return 'SEASONED';
+    if (year === 2024) return 'LEARNER';
+    if (year === 2025) return 'NEWBIE';
+    return 'FRESHER'; // 2026 or later
+  };
+
   drawStatBox(ctx, 40, 180, 180, 60, 'ERA JOINED',
-    data.ogStatus.daysSinceFirst !== null
-      ? `${data.ogStatus.daysSinceFirst} days`
-      : 'Unknown',
+    getEraLabel(data.ogStatus.firstTransactionDate),
     '#14f195'
   );
 
