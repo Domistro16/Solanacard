@@ -99,7 +99,7 @@ function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: n
   // Top Holdings (TOP BAGS)
   drawStatBox(ctx, 40, 345, 180, 60, 'TOP BAGS',
     data.topHoldings.length > 0
-      ? data.topHoldings[0].symbol
+      ? `${data.topHoldings[0].name}\n${data.topHoldings[0].symbol}`
       : 'None',
     '#14f195'
   );
