@@ -68,10 +68,10 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
     const persImg = new Image();
     persImg.src = randomPersImage;
     persImg.onload = () => {
-      // Draw pers image centered below the header
-      const persSize = 100; // Size of the pers image
+      // Draw pers image centered directly below the title
+      const persSize = 80; // Size of the pers image
       const persX = (width - persSize) / 2;
-      const persY = 160; // Position below the address
+      const persY = 135; // Position directly below the title
       ctx.drawImage(persImg, persX, persY, persSize, persSize);
 
       // Continue with the rest of the drawing
@@ -85,15 +85,15 @@ function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: n
   // Title
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 24px Arial';
-  ctx.fillText('SolPack', width / 2, 120);
   ctx.textAlign = 'center';
+  ctx.fillText('SolPack', width / 2, 120);
 
-  // Address
+  // Address - positioned on left, above ERA JOINED box
   ctx.fillStyle = '#a0a0b0';
-  ctx.font = '12px monospace';
-  const shortAddress = `${data.address.slice(0, 6)}...${data.address.slice(-6)}`;
-  ctx.fillText(shortAddress, width / 2, 145);
+  ctx.font = '10px monospace';
   ctx.textAlign = 'left';
+  const shortAddress = `${data.address.slice(0, 6)}...${data.address.slice(-6)}`;
+  ctx.fillText(shortAddress, 40, 265);
 
   // Stats Section - Positioned to match the template layout
 
