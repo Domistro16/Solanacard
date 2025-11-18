@@ -1,5 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { WalletAnalysis } from '../types';
+import BlankImage from '../assets/Blank.png';
+import Pers1 from '../assets/Pers1.png';
+import pers2 from '../assets/pers2.png';
+import pers3 from '../assets/pers3.png';
+import pers4 from '../assets/pers4.png';
+import pers5 from '../assets/pers5.png';
+import pers6 from '../assets/pers6.png';
+import pers7 from '../assets/pers7.png';
+import pers8 from '../assets/pers8.png';
+import pers9 from '../assets/pers9.png';
+
+const persImages = [Pers1, pers2, pers3, pers4, pers5, pers6, pers7, pers8, pers9];
 
 interface WalletCardProps {
   data: WalletAnalysis;
@@ -26,7 +38,7 @@ export function WalletCard({ data }: WalletCardProps) {
   return (
     <div>
       <div className="canvas-container">
-        <canvas ref={canvasRef} width={1200} height={630} />
+        <canvas ref={canvasRef} width={540} height={630} />
       </div>
       <button className="btn download-btn" onClick={downloadImage}>
         Download Card
@@ -42,111 +54,106 @@ function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
   const width = canvas.width;
   const height = canvas.height;
 
-  // Background gradient
-  const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, '#0a0a0f');
-  gradient.addColorStop(0.5, '#14141f');
-  gradient.addColorStop(1, '#1a1a2e');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
+  // Select a random pers image
+  const randomPersImage = persImages[Math.floor(Math.random() * persImages.length)];
 
-  // Add accent gradient overlay
-  const accentGradient = ctx.createLinearGradient(0, 0, width, height);
-  accentGradient.addColorStop(0, 'rgba(153, 69, 255, 0.1)');
-  accentGradient.addColorStop(1, 'rgba(20, 241, 149, 0.1)');
-  ctx.fillStyle = accentGradient;
-  ctx.fillRect(0, 0, width, height);
+  // Load and draw background image
+  const bgImage = new Image();
+  bgImage.src = BlankImage;
+  bgImage.onload = () => {
+    // Draw the background image
+    ctx.drawImage(bgImage, 0, 0, width, height);
 
-  // Border
-  ctx.strokeStyle = '#2a2a3e';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(10, 10, width - 20, height - 20);
+    // Load and draw the pers image
+    const persImg = new Image();
+    persImg.src = randomPersImage;
+    persImg.onload = () => {
+      // Draw pers image centered directly below the title
+      const persSize = 80; // Size of the pers image
+      const persX = (width - persSize) / 2;
+      const persY = 135; // Position directly below the title
+      ctx.drawImage(persImg, persX, persY, persSize, persSize);
+
+      // Continue with the rest of the drawing
+      drawCardContent(ctx, width, height, data);
+    };
+  };
+}
+
+function drawCardContent(ctx: CanvasRenderingContext2D, width: number, height: number, data: WalletAnalysis) {
 
   // Title
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 48px Arial';
-  ctx.fillText('SOLANA WALLET CARD', 60, 80);
+  ctx.font = 'bold 24px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('SolPack', width / 2, 120);
 
-  // Address
+  // Address - positioned on left, above ERA JOINED box
   ctx.fillStyle = '#a0a0b0';
-  ctx.font = '24px monospace';
-  const shortAddress = `${data.address.slice(0, 8)}...${data.address.slice(-8)}`;
-  ctx.fillText(shortAddress, 60, 120);
+  ctx.font = '10px monospace';
+  ctx.textAlign = 'left';
+  const shortAddress = `${data.address.slice(0, 6)}...${data.address.slice(-6)}`;
+  ctx.fillText(shortAddress, 40, 265);
 
-  // Whale Status - Large and prominent
-  const tierColors: Record<string, string> = {
-    Kraken: '#ff0080',
-    Whale: '#9945ff',
-    Shark: '#14f195',
-    Dolphin: '#4da6ff',
-    Fish: '#ffd700',
+  // Stats Section - Positioned to match the template layout
+
+  // OG Status (ERA JOINED)
+  const getEraLabel = (firstTransactionDate: string | null): string => {
+    if (!firstTransactionDate) return 'Unknown';
+
+    const year = new Date(firstTransactionDate).getFullYear();
+
+    if (year <= 2021) return 'EARLY-OG';
+    if (year === 2022) return 'SURVIVOR';
+    if (year === 2023) return 'SEASONED';
+    if (year === 2024) return 'LEARNER';
+    if (year === 2025) return 'NEWBIE';
+    return 'FRESHER'; // 2026 or later
   };
 
-  const tierColor = tierColors[data.whaleStatus.tier] || '#14f195';
-
-  // Whale tier circle background
-  ctx.fillStyle = 'rgba(153, 69, 255, 0.2)';
-  ctx.beginPath();
-  ctx.arc(width - 200, 150, 100, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Whale tier text
-  ctx.fillStyle = tierColor;
-  ctx.font = 'bold 36px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(data.whaleStatus.tier, width - 200, 145);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '20px Arial';
-  ctx.fillText(`${data.whaleStatus.solBalance.toFixed(2)} SOL`, width - 200, 175);
-  ctx.textAlign = 'left';
-
-  // Stats Section
-  let yPos = 200;
-
-  // OG Status
-  drawStatBox(ctx, 60, yPos, 500, 120, 'OG STATUS',
-    data.ogStatus.daysSinceFirst !== null
-      ? `${data.ogStatus.daysSinceFirst} days on Solana`
-      : 'No history',
-    '#9945ff'
-  );
-
-  // Last Seen
-  drawStatBox(ctx, 640, yPos, 500, 120, 'LAST SEEN',
-    data.lastSeen.daysSinceLast !== null
-      ? data.lastSeen.daysSinceLast === 0
-        ? 'Active today'
-        : `${data.lastSeen.daysSinceLast} days ago`
-      : 'No activity',
+  drawStatBox(ctx, 40, 280, 180, 60, 'ERA JOINED',
+    getEraLabel(data.ogStatus.firstTransactionDate),
     '#14f195'
   );
 
-  yPos += 150;
-
-  // Top Holdings
-  drawStatBox(ctx, 60, yPos, 500, 200, 'TOP HOLDINGS',
-    data.topHoldings.slice(0, 4).map(h =>
-      `${h.symbol}: ${h.amount.toFixed(2)}`
-    ).join('\n'),
-    '#4da6ff'
+  // Last Seen
+  drawStatBox(ctx, 310, 280, 180, 60, 'LAST SEEN',
+    data.lastSeen.daysSinceLast !== null
+      ? data.lastSeen.daysSinceLast === 0
+        ? 'Today'
+        : `${data.lastSeen.daysSinceLast}d ago`
+      : 'Unknown',
+    '#14f195'
   );
 
-  // Top Ecosystems
-  drawStatBox(ctx, 640, yPos, 500, 200, 'TOP ECOSYSTEMS',
+  // Archetype (Whale Status)
+  drawStatBox(ctx, 40, 350, 180, 60, 'ARCHETYPE',
+    data.whaleStatus.tier,
+    '#14f195'
+  );
+
+  // Top Holdings (TOP BAGS)
+  drawStatBox(ctx, 40, 420, 180, 60, 'TOP BAGS',
+    data.topHoldings.length > 0
+      ? `${data.topHoldings[0].name}\n${data.topHoldings[0].symbol}`
+      : 'None',
+    '#14f195'
+  );
+
+  // Top Ecosystems (ECOSYSTEM DEPTH)
+  drawStatBox(ctx, 40, 490, 180, 60, 'ECOSYSTEM DEPTH',
     data.topEcosystems.length > 0
-      ? data.topEcosystems.map(e =>
-          `${e.name}: ${e.interactionCount} txns`
-        ).join('\n')
-      : 'No ecosystem interactions',
-    '#ffd700'
+      ? data.topEcosystems[0].name
+      : 'None',
+    '#14f195'
   );
 
   // Footer
-  ctx.fillStyle = '#a0a0b0';
-  ctx.font = '18px Arial';
+  ctx.fillStyle = '#14f195';
+  ctx.font = '10px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Generated by Solana Card', width / 2, height - 30);
+  ctx.fillText('Every wallet has a personality.', width / 2, height - 50);
+  ctx.fillText('Check yours at level3labs.fun', width / 2, height - 35);
   ctx.textAlign = 'left';
 }
 
@@ -160,26 +167,17 @@ function drawStatBox(
   value: string,
   accentColor: string
 ) {
-  // Box background
-  ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
-  ctx.fillRect(x, y, width, height);
-
-  // Border with accent color
-  ctx.strokeStyle = accentColor;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x, y, width, height);
-
   // Label
   ctx.fillStyle = accentColor;
-  ctx.font = 'bold 20px Arial';
-  ctx.fillText(label, x + 20, y + 35);
+  ctx.font = '10px Arial';
+  ctx.fillText(label, x, y);
 
   // Value
   ctx.fillStyle = '#ffffff';
-  ctx.font = '24px Arial';
+  ctx.font = 'bold 14px Arial';
 
   const lines = value.split('\n');
   lines.forEach((line, index) => {
-    ctx.fillText(line, x + 20, y + 75 + (index * 32));
+    ctx.fillText(line, x, y + 20 + (index * 16));
   });
 }
