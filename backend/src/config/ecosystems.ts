@@ -69,11 +69,18 @@ export const ECOSYSTEMS: Record<string, Ecosystem> = {
     ],
     description: "Liquidity Protocol",
   },
+  BAGS: {
+    name: "Bags",
+    programIds: [
+      "FEEhPbKVKnco9EXnaY3i4R5rQVUx91wgVfu8qokixywi",
+      "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
+      "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN",
+    ],
+    description: "Token Launchpad",
+  },
   MARINADE: {
     name: "Marinade",
-    programIds: [
-      "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD",
-    ],
+    programIds: ["MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"],
     description: "Liquid Staking",
   },
   JITO: {
@@ -94,23 +101,17 @@ export const ECOSYSTEMS: Record<string, Ecosystem> = {
   },
   MARGINFI: {
     name: "MarginFi",
-    programIds: [
-      "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
-    ],
+    programIds: ["MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA"],
     description: "Lending Protocol",
   },
   DRIFT: {
     name: "Drift",
-    programIds: [
-      "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH",
-    ],
+    programIds: ["dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"],
     description: "Perpetuals DEX",
   },
   PHOENIX: {
     name: "Phoenix",
-    programIds: [
-      "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY",
-    ],
+    programIds: ["PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY"],
     description: "Orderbook DEX",
   },
   STAR_ATLAS: {
@@ -123,16 +124,12 @@ export const ECOSYSTEMS: Record<string, Ecosystem> = {
   },
   GENOPETS: {
     name: "Genopets",
-    programIds: [
-      "GENEUpG4Ncpjy3kTpVYCy3EhLGYqWQeFWLTe6H8QYZBv",
-    ],
+    programIds: ["GENEUpG4Ncpjy3kTpVYCy3EhLGYqWQeFWLTe6H8QYZBv"],
     description: "Gaming",
   },
   BONFIDA: {
     name: "Bonfida",
-    programIds: [
-      "namesLPneVptA9Z5rqUDD9tMTWEJwofgaYwp8cawRkX",
-    ],
+    programIds: ["namesLPneVptA9Z5rqUDD9tMTWEJwofgaYwp8cawRkX"],
     description: "Name Service",
   },
   METAPLEX: {

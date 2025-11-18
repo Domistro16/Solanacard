@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import axios from 'axios';
-import { WalletCard } from './components/WalletCard';
-import { WalletAnalysis } from './types';
-import './App.css';
+import { useState } from "react";
+import axios from "axios";
+import { WalletCard } from "./components/WalletCard";
+import { WalletAnalysis } from "./types";
+import "./App.css";
 
 function App() {
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<WalletAnalysis | null>(null);
 
   const analyzeWallet = async () => {
     if (!address.trim()) {
-      setError('Please enter a Solana wallet address');
+      setError("Please enter a Solana wallet address");
       return;
     }
 
@@ -21,19 +21,21 @@ function App() {
     setData(null);
 
     try {
-      const response = await axios.get(`/api/analyze/${address.trim()}`);
+      const response = await axios.get(
+        `http://localhost:3000/api/analyze/${address.trim()}`
+      );
 
       if (response.data.success) {
         setData(response.data.data);
       } else {
-        setError(response.data.message || 'Failed to analyze wallet');
+        setError(response.data.message || "Failed to analyze wallet");
       }
     } catch (err: any) {
-      console.error('Error:', err);
+      console.error("Error:", err);
       setError(
         err.response?.data?.message ||
-        err.message ||
-        'Failed to analyze wallet. Please check the address and try again.'
+          err.message ||
+          "Failed to analyze wallet. Please check the address and try again."
       );
     } finally {
       setLoading(false);
@@ -41,7 +43,7 @@ function App() {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       analyzeWallet();
     }
   };
@@ -64,20 +66,12 @@ function App() {
               onKeyPress={handleKeyPress}
               disabled={loading}
             />
-            <button
-              className="btn"
-              onClick={analyzeWallet}
-              disabled={loading}
-            >
-              {loading ? 'Analyzing...' : 'Generate Card'}
+            <button className="btn" onClick={analyzeWallet} disabled={loading}>
+              {loading ? "Analyzing..." : "Generate Card"}
             </button>
           </div>
 
-          {error && (
-            <div className="error">
-              {error}
-            </div>
-          )}
+          {error && <div className="error">{error}</div>}
         </div>
 
         {loading && (
@@ -94,12 +88,16 @@ function App() {
             <div className="stats-grid">
               <div className="stat-card">
                 <div className="stat-label">Wallet Tier</div>
-                <div className="stat-value highlight">{data.whaleStatus.tier}</div>
+                <div className="stat-value highlight">
+                  {data.whaleStatus.tier}
+                </div>
               </div>
 
               <div className="stat-card">
                 <div className="stat-label">SOL Balance</div>
-                <div className="stat-value">{data.whaleStatus.solBalance.toFixed(4)}</div>
+                <div className="stat-value">
+                  {data.whaleStatus.solBalance.toFixed(4)}
+                </div>
               </div>
 
               <div className="stat-card">
@@ -107,7 +105,7 @@ function App() {
                 <div className="stat-value">
                   {data.ogStatus.daysSinceFirst !== null
                     ? data.ogStatus.daysSinceFirst
-                    : 'N/A'}
+                    : "N/A"}
                 </div>
               </div>
 
@@ -116,9 +114,9 @@ function App() {
                 <div className="stat-value">
                   {data.lastSeen.daysSinceLast !== null
                     ? data.lastSeen.daysSinceLast === 0
-                      ? 'Today'
+                      ? "Today"
                       : `${data.lastSeen.daysSinceLast}d ago`
-                    : 'N/A'}
+                    : "N/A"}
                 </div>
               </div>
             </div>

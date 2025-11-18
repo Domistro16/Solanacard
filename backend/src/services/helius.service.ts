@@ -96,20 +96,21 @@ export class HeliusService {
     try {
       // Use the getTransactionsForAddress RPC method for better control
       const response = await axios.post(this.rpcUrl, {
-        jsonrpc: '2.0',
-        id: 'get-transactions',
-        method: 'getTransactionsForAddress',
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getTransactionsForAddress",
         params: [
           address,
           {
-            transactionDetails: 'full',
-            sortOrder: 'desc', // Most recent first
-            limit: 1000,
+            transactionDetails: "full",
+            sortOrder: "desc", // Most recent first
+            limit: 100,
             filters: {
-              status: 'succeeded', // Only successful transactions
+              status: "succeeded", // Only successful transactions
             },
           },
         ],
+        
       });
 
       return response.data.result?.data || [];
