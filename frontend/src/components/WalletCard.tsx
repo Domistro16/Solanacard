@@ -39,7 +39,7 @@ interface WalletCardProps {
 
 export function WalletCard({ data }: WalletCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
+  console.log(data);
   useEffect(() => {
     async function loadFonts() {
       const font = new FontFace(
@@ -121,7 +121,7 @@ async function drawCard(canvas: HTMLCanvasElement, data: WalletAnalysis) {
       loadImage(BlankImage),
       loadImage(randomPersImage),
       loadImage(randomVerd),
-      loadImage(`/${data.whaleStatus.tier.toLowerCase()}.png`),
+      loadImage(`/${data.whaleStatus.tier}.png`),
     ]);
 
     // ✅ Now draw everything in the correct order, ONCE

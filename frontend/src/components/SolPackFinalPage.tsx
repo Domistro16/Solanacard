@@ -9,7 +9,11 @@ interface SolPackFinalPageProps {
   onRestart: () => void;
 }
 
-export default function SolPackFinalPage({ wallet, data, onRestart }: SolPackFinalPageProps) {
+export default function SolPackFinalPage({
+  wallet,
+  data,
+  onRestart,
+}: SolPackFinalPageProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
@@ -29,14 +33,11 @@ export default function SolPackFinalPage({ wallet, data, onRestart }: SolPackFin
   };
 
   const handleShare = () => {
-    const baseText = "Just generated my SolPack wallet vibe card on Solana.";
-    const walletSnippet =
-      wallet && wallet.length > 8
-        ? ` Wallet: ${wallet.slice(0, 4)}...${wallet.slice(-4)}`
-        : "";
-    const text = encodeURIComponent(baseText + walletSnippet + " #SolPack #Solana");
-    const url = encodeURIComponent("https://solpack.level3labs.fun"); // update later
-    window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, "_blank");
+    wallet;
+    const baseText =
+      "Just generated my SolPack wallet vibe card on Solana from @Level3Lab \n \n What do you think? Get yours at https://solpack.level3labs.fun";
+    const text = encodeURIComponent(baseText);
+    window.open(`https://x.com/intent/tweet?text=${text}`, "_blank");
   };
 
   return (
