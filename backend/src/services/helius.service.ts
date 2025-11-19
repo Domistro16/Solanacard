@@ -56,7 +56,7 @@ export class HeliusService {
       tier: getWhaleTier(balance),
       solBalance: balance,
     };
-    const topHoldings = this.getTopHoldings(assets, balance);
+    const topHoldings = await this.getTopHoldings(assets, balance);
     const topEcosystems = this.analyzeEcosystems(transactions);
 
     return {
@@ -203,23 +203,48 @@ export class HeliusService {
   }
 
   /**
-   * Get top token holdings from DAS API assets
+   * Fetch SOL price from CoinGecko API
    */
-  private getTopHoldings(
+  private async getSolPrice(): Promise<number> {
+    try {
+      const response = await axios.get(
+        'https://api.coingecko.com/api/v3/simple/price',
+        {
+          params: {
+            ids: 'solana',
+            vs_currencies: 'usd',
+          },
+        }
+      );
+      return response.data?.solana?.usd || 0;
+    } catch (error) {
+      console.error('Error fetching SOL price:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Get top token holdings from DAS API assets
+   * Returns the single token with the highest USD value (including SOL)
+   */
+  private async getTopHoldings(
     assets: any[],
     solBalance: number
-  ): Array<{
+  ): Promise<Array<{
     symbol: string;
     name: string;
     amount: number;
     usdValue?: number;
-  }> {
+  }>> {
+    // Fetch SOL price
+    const solPrice = await this.getSolPrice();
+
     const holdings = [
       {
         symbol: 'SOL',
         name: 'Solana',
         amount: solBalance,
-        usdValue: 0, // Could integrate price API here
+        usdValue: solBalance * solPrice,
       },
     ];
 
@@ -244,14 +269,16 @@ export class HeliusService {
             usdValue: tokenInfo?.price_info?.total_price || 0,
           };
         })
-        .filter((token) => token.amount > 0)
-        .sort((a, b) => (b.usdValue || b.amount) - (a.usdValue || a.amount))
-        .slice(0, 5);
+        .filter((token) => token.amount > 0);
 
       holdings.push(...tokenHoldings);
     }
 
-    return holdings.slice(0, 6); // Return top 6 holdings
+    // Sort all holdings by USD value (descending) and return only the top one
+    holdings.sort((a, b) => (b.usdValue || 0) - (a.usdValue || 0));
+
+    // Return only the token with the highest USD value
+    return holdings.length > 0 ? [holdings[0]] : [];
   }
 
   /**
