@@ -19,7 +19,10 @@ if (!HELIUS_API_KEY) {
 const heliusService = new HeliusService(HELIUS_API_KEY);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://solpack.level3labs.fun',
+  credentials: true
+}));
 app.use(express.json());
 
 // Health check endpoint

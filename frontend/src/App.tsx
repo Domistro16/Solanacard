@@ -25,7 +25,7 @@ function App() {
 
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/analyze/${walletAddress.trim()}`
+        `https://solanacard.up.railway.app/api/analyze/${walletAddress.trim()}`
       );
 
       if (response.data.success) {

@@ -35,7 +35,7 @@ export default function SolPackFinalPage({ wallet, data, onRestart }: SolPackFin
         ? ` Wallet: ${wallet.slice(0, 4)}...${wallet.slice(-4)}`
         : "";
     const text = encodeURIComponent(baseText + walletSnippet + " #SolPack #Solana");
-    const url = encodeURIComponent("https://your-solpack-site.xyz"); // update later
+    const url = encodeURIComponent("https://solpack.level3labs.fun"); // update later
     window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, "_blank");
   };
 
