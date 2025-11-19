@@ -202,11 +202,7 @@ function drawCardContent(
     225,
     420,
     data.topHoldings.length > 0
-      ? `$${
-          data.topHoldings[0].amount > data.topHoldings[1].amount
-            ? data.topHoldings[0].symbol
-            : data.topHoldings[1].symbol
-        }  `
+      ? `$${data.topHoldings[0].symbol}  `
       : "None",
     "#6B8AFF"
   );
